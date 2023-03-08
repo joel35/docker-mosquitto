@@ -20,13 +20,14 @@ RUN apt-get update \
     && apt-get clean
 
 # create necessary directories
-RUN mkdir --parents /mqtt/config /mqtt/data /mqtt/log
+RUN mkdir --parents /var/run/mosquitto /mqtt/config /mqtt/data /mqtt/log
 
 # copy host config dir to image
 COPY config /mqtt/config
 
 # set ownership
-RUN chown --recursive mosquitto:mosquitto /mqtt
+RUN chown --recursive mosquitto:mosquitto /mqtt \
+    && chown --recursive mosquitto:mosquitto /var/run/mosquitto
 
 # create image volumes
 VOLUME ["/mqtt/config", "/mqtt/data", "/mqtt/log"]
