@@ -1,0 +1,38 @@
+# Mosquitto image for Raspberry Pi
+# Forked from https://github.com/raspberryvalley/docker-mosquitto
+
+FROM balenalib/%%BALENA_ARCH%%-debian:bullseye-run
+LABEL maintainer = "joel35 <64959969+joel35@users.noreply.github.com>"
+
+# update APT, install mosquitto repo, install mosquitto, clean up
+RUN apt-get update \
+    && apt-get --assume-yes --no-install-recommends install \
+    apt-transport-https \
+    apt-utils \
+    wget \
+    && wget --quiet --output-document=- https://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - \
+    && wget --quiet --output-document=/etc/apt/sources.list.d/mosquitto-bullseye.list https://repo.mosquitto.org/debian/mosquitto-bullseye.list \
+    && apt-get update \
+    && apt-get --assume-yes --no-install-recommends install \
+    mosquitto \
+    && apt-get purge --assume-yes --auto-remove \
+    && rm --recursive --force /var/lib/apt/lists/* \
+    && apt-get clean
+
+# create necessary directories
+RUN mkdir --parents /mqtt/config /mqtt/data /mqtt/log
+
+# copy host config dir to image
+COPY config /mqtt/config
+
+# set ownership
+RUN chown --recursive mosquitto:mosquitto /mqtt
+
+# create image volumes
+VOLUME ["/mqtt/config", "/mqtt/data", "/mqtt/log"]
+
+# expose ports
+EXPOSE 1883 9001
+
+# run app
+CMD /usr/sbin/mosquitto --config-file /mqtt/config/mosquitto.conf

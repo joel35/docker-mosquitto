@@ -1,0 +1,17 @@
+name: docker-mosquitto
+description: >-
+  # Mosquitto image for Raspberry Pi. Forked from https://github.com/raspberryvalley/docker-mosquitto
+version: 0.1.0
+type: sw.block
+assets:
+  repository:
+    type: blob.asset
+    data:
+      url: 'https://github.com/joel35/docker-mosquitto'
+data:
+  defaultDeviceType: raspberrypi4-64
+  supportedDeviceTypes:
+    - raspberrypi4-64
+    - raspberrypi3
+    - raspberrypi3-64
+
