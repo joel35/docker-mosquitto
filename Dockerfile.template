@@ -1,35 +1,39 @@
 # Mosquitto image for Raspberry Pi
 # Forked from https://github.com/raspberryvalley/docker-mosquitto
 
+# get correct base image based on hardware architecture
 FROM balenalib/%%BALENA_ARCH%%-debian:bullseye-run
 LABEL maintainer = "joel35 <64959969+joel35@users.noreply.github.com>"
 
-# update APT, install mosquitto repo, install mosquitto, clean up
+# update apt
 RUN apt-get update \
+# install core dependencies
     && apt-get --assume-yes --no-install-recommends install \
     apt-transport-https \
     apt-utils \
     wget \
+# add 3rd-party mosquitto repo to apt
     && wget --quiet --output-document=- https://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - \
     && wget --quiet --output-document=/etc/apt/sources.list.d/mosquitto-bullseye.list https://repo.mosquitto.org/debian/mosquitto-bullseye.list \
     && apt-get update \
+# install mosquitto from 3rd-party repo
     && apt-get --assume-yes --no-install-recommends install \
     mosquitto \
+# clean up
     && apt-get purge --assume-yes --auto-remove \
     && rm --recursive --force /var/lib/apt/lists/* \
     && apt-get clean
 
-# create necessary directories
-RUN mkdir --parents /var/run/mosquitto /mqtt/config /mqtt/data /mqtt/log
+# create necessary directories and set ownership
+RUN mkdir --parents /var/run/mosquitto \
+    && chown --recursive mosquitto:mosquitto /var/run/mosquitto \
+    && mkdir --parents /mqtt/config /mqtt/data /mqtt/log \
+    && chown --recursive mosquitto:mosquitto /mqtt
 
-# copy host config dir to image
+# copy host config directory to image
 COPY config /mqtt/config
 
-# set ownership
-RUN chown --recursive mosquitto:mosquitto /mqtt \
-    && chown --recursive mosquitto:mosquitto /var/run/mosquitto
-
-# create image volumes
+# create necessary image volumes
 VOLUME ["/mqtt/config", "/mqtt/data", "/mqtt/log"]
 
 # expose ports
